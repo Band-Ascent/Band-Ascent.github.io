@@ -1,0 +1,26 @@
+{
+  "name": "Band Ascent — practice for the IELTS exam",
+  "short_name": "Band Ascent",
+  "description": "Free, offline-first practice for the IELTS exam. Adaptive band estimate, a study plan built from your weakest skills, and nine timed drills over 2,125 tiered questions. No account, no server.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#EAEFF4",
+  "theme_color": "#0F2233",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "assets/icon-192.png",           "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png",           "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Today's plan",  "short_name": "Today",    "url": "./?go=home" },
+    { "name": "Practice drills","short_name": "Practice", "url": "./?go=arena" },
+    { "name": "Progress",      "short_name": "Progress",  "url": "./?go=progress" }
+  ]
+}
