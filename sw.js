@@ -3,8 +3,8 @@
    Makes the app installable and fully usable offline, including the question
    library. Bump CACHE_VERSION on every release so clients pick up the change.
    ============================================================================ */
-const CACHE_VERSION = "band-ascent-v1";
-const RUNTIME       = "band-ascent-runtime-v1";
+const CACHE_VERSION = "band-ascent-v2";
+const RUNTIME       = "band-ascent-runtime-v2";
 
 /* Relative paths so this works at a user page or a project subpath alike. */
 const SHELL = [
@@ -99,9 +99,10 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  /* Fonts and the Tailwind CDN: keep a copy so the app looks right offline.
-     These are opaque cross-origin responses, which is fine for styling. */
-  if (/fonts\.(googleapis|gstatic)\.com|cdn\.tailwindcss\.com/.test(url.hostname + url.pathname)) {
+  /* Webfonts: keep a copy so the app looks right offline. These are opaque
+     cross-origin responses, which is fine for styling. The page no longer
+     loads any third-party script. */
+  if (/fonts\.(googleapis|gstatic)\.com/.test(url.hostname)) {
     event.respondWith(cacheFirst(req, RUNTIME).catch(() => new Response("", {status:504})));
   }
 });
