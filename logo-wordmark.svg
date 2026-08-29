@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" role="img" aria-label="Band Ascent">
+  <title>Band Ascent</title>
+  <rect width="64" height="64" rx="15" fill="#0F2233"/>
+  <rect x="12" y="36" width="10" height="16" rx="3.2" fill="#3E6076"/>
+  <rect x="27" y="27" width="10" height="25" rx="3.2" fill="#0E7C86"/>
+  <rect x="42" y="14" width="10" height="38" rx="3.2" fill="#E8A32D"/>
+  <text x="80" y="34" font-family="Bricolage Grotesque 96pt ExtraBold, Bricolage Grotesque, Segoe UI, system-ui, sans-serif" font-size="25" font-weight="800" fill="#0F2233" letter-spacing="-0.6">Band Ascent</text>
+  <text x="81" y="50" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9.5" fill="#5A7183" letter-spacing="2.8">PRACTICE · MEASURE · CLIMB</text>
+</svg>
