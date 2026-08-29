@@ -14,6 +14,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Band Ascent">
+<meta name="application-name" content="Band Ascent">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%230F2233'/><rect x='12' y='36' width='10' height='16' rx='3.2' fill='%233E6076'/><rect x='27' y='27' width='10' height='25' rx='3.2' fill='%230E7C86'/><rect x='42' y='14' width='10' height='38' rx='3.2' fill='%23E8A32D'/></svg>">
 <style>
@@ -268,6 +275,9 @@ input.field:focus,select.field:focus{border-color:var(--teal);outline:none}
   .split{grid-template-columns:1fr}
   .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
   .g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (display-mode:standalone){
+  .main{padding-top:calc(26px + env(safe-area-inset-top))}
 }
 @media (max-width:720px){
   body{padding-bottom:0}
@@ -730,6 +740,64 @@ function paintChrome(){
   if(rx) rx.style.width=li.pct+"%";
   if(rl) rl.textContent=`Level ${li.level} · ${li.into}/${li.need} XP`;
 }
+
+/* ---- installable app (PWA) ----------------------------------------------
+   Registers the service worker, captures the install prompt, and reports
+   honestly when installation is not offered by the browser.               */
+const PWA = {
+  prompt:null, reg:null, waiting:null, supported:false,
+  get installed(){
+    try{
+      return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+          || window.navigator.standalone === true;
+    }catch(e){ return false; }
+  },
+  get isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; },
+  get secure(){ return location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname); },
+  init(){
+    this.supported = ("serviceWorker" in navigator) && this.secure;
+    window.addEventListener("beforeinstallprompt", e=>{
+      e.preventDefault(); this.prompt=e;
+      if(current==="settings") renderSettings();
+    });
+    window.addEventListener("appinstalled", ()=>{
+      this.prompt=null;
+      toast("Installed", "Band Ascent is now on your device and works offline.", "\u2705", 6000);
+      if(current==="settings") renderSettings();
+    });
+    if(!this.supported) return;
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("sw.js").then(reg=>{
+        this.reg=reg;
+        if(reg.waiting){ this.waiting=reg.waiting; this.announce(); }
+        reg.addEventListener("updatefound", ()=>{
+          const nw=reg.installing; if(!nw) return;
+          nw.addEventListener("statechange", ()=>{
+            if(nw.state==="installed" && navigator.serviceWorker.controller){
+              this.waiting=nw; this.announce();
+            }
+          });
+        });
+      }).catch(()=>{});
+    });
+  },
+  announce(){
+    toast("Update ready", "A newer version has been downloaded. It is applied the next time you open the app, or update now in Settings.", "\u2b06\ufe0f", 9000);
+    if(current==="settings") renderSettings();
+  },
+  async install(){
+    if(!this.prompt) return;
+    this.prompt.prompt();
+    try{ await this.prompt.userChoice; }catch(e){}
+    this.prompt=null;
+    if(current==="settings") renderSettings();
+  },
+  applyUpdate(){
+    if(!this.waiting) return;
+    this.waiting.postMessage("SKIP_WAITING");
+    navigator.serviceWorker.addEventListener("controllerchange", ()=>location.reload(), {once:true});
+  }
+};
 
 /* ---- reminders and inactivity ------------------------------------------- */
 const Nudge={
@@ -1311,6 +1379,36 @@ function libraryChip(){
               : `${n.toLocaleString()} built-in items`;
   return `<button class="pill ${src==="core"?"":"teal"}" onclick="go('settings')" title="Question library">📚 ${label}</button>`;
 }
+function installPanel(){
+  const installed = PWA.installed;
+  const canPrompt = !!PWA.prompt;
+  const ios = PWA.isIOS;
+  let body, actions="";
+  if(installed){
+    body = "Band Ascent is installed and running as an app. It opens from your home screen or app list and works with no connection at all.";
+  } else if(canPrompt){
+    body = "Install Band Ascent to get its own icon and window, launch without a browser bar, and keep the whole question library available offline.";
+    actions = `<button class="btn gold sm" onclick="PWA.install()">Install app</button>`;
+  } else if(ios){
+    body = "On iPhone and iPad, Safari installs web apps from the share menu: tap <b>Share</b>, then <b>Add to Home Screen</b>. It will then open like any other app and work offline.";
+  } else if(!PWA.secure){
+    body = "Installation needs a secure connection. Open this page over <span class=\"mono tiny\">https://</span> — for example from GitHub Pages — and the option will appear here.";
+  } else {
+    body = "Your browser has not offered installation yet. Chrome and Edge usually show an install icon in the address bar after a visit or two; Firefox on desktop does not support installing web apps.";
+  }
+  const upd = PWA.waiting ? `<div class="banner" style="margin:12px 0 0"><span>\u2b06\ufe0f</span><div><b>Update ready.</b> A newer version is downloaded and waiting.
+      <div style="margin-top:8px"><button class="btn sm" onclick="PWA.applyUpdate()">Update now</button></div></div></div>` : "";
+  return `<div class="card rise">
+    <div class="card-head"><h3>Install as an app</h3>
+      <span class="pill ${installed?"mint":"gold"}">${installed?"Installed":"Web page"}</span></div>
+    <p class="small muted">${body}</p>
+    ${actions?`<div class="rowwrap" style="margin-top:12px">${actions}</div>`:""}
+    <div class="kv" style="margin-top:12px"><span class="small">Offline ready</span>
+      <span class="mono small">${PWA.supported?(PWA.reg?"yes":"preparing\u2026"):"needs https"}</span></div>
+    ${upd}
+  </div>`;
+}
+
 function libraryPanel(){
   const n=Content.items, src=Content.source, c=(BANK.meta&&BANK.meta.counts)||null;
   const rows = c ? Object.entries(c).map(([k,v])=>`<div class="kv"><span class="small">${esc(k.replace(/([A-Z])/g," $1").toLowerCase())}</span><span class="mono small">${v.toLocaleString()}</span></div>`).join("") : "";
@@ -1734,6 +1832,7 @@ function renderSettings(){
           <button class="btn danger sm" onclick="resetAll()">Erase everything</button>
         </div>
       </div>
+      ${installPanel()}
       ${libraryPanel()}
       <div class="card rise">
         <h3 style="margin-bottom:8px">How the band estimate works</h3>
@@ -2319,6 +2418,7 @@ function beginSpeak(part){
     <p class="small muted">Reading band-ascent-content.json</p></div>`;
   await Content.load();
   Speech.init();
+  PWA.init();
   auditStreak();
   paintChrome();
   Nudge.reset(); Nudge.clock();
@@ -2328,7 +2428,8 @@ function beginSpeak(part){
   if(!S.assessed){ renderOnboard(); go("onboard"); }
   else{
     todayQuests();
-    go("home");
+    const want=new URLSearchParams(location.search).get("go");
+    go(["home","plan","arena","progress","settings"].includes(want)?want:"home");
     const hrs = lastSeen ? (Date.now()-lastSeen)/36e5 : 0;
     if(hrs>=20){
       later(()=>toast("Welcome back",
