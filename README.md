@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo-wordmark.svg" alt="Band Ascent" width="380">
+  <img src="https://github.com/Band-Ascent/Band-Ascent.github.io/blob/9b33532c4c2343cab0daaee9cd6580b5ce6ebe95/logo-wordmark.svg" alt="Band Ascent" width="380">
 </p>
 
 <p align="center">
