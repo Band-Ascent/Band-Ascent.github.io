@@ -56,14 +56,16 @@ python3 -m http.server 8000
 ```
 
 A plain web server is all it needs — there is no build step, no bundler, no
-dependencies. Opening `index.html` directly from disk also works, but browsers
-block the question library on `file://` URLs, so the app falls back to a 351-item
-sample built into the page. Settings → *Question library* lets you load the JSON
-by hand in that case.
+dependencies, and no third-party script. Opening `index.html` directly from disk
+also works, but browsers block the question library on `file://` URLs, so the app
+falls back to a 351-item sample built into the page. Settings → *Question library*
+lets you load the JSON by hand in that case.
 
 ## Deploying to GitHub Pages
 
-1. Push `index.html`, `band-ascent-content.json`, `.nojekyll` and `assets/` to `main`.
+1. Push `index.html`, `band-ascent-content.json`, `sw.js`, `manifest.webmanifest`,
+   `.nojekyll` and `assets/` to `main`. The icons in `assets/` are what make the
+   app installable — without a 192px icon browsers never offer the install prompt.
 2. **Settings → Pages** → *Deploy from a branch* → `main` / `(root)`.
 3. Open `https://<org>.github.io/band-ascent/`.
 
@@ -104,8 +106,10 @@ to neighbouring tiers automatically rather than repeating questions.
 ## Privacy
 
 There is no backend and no analytics. Progress lives in your browser's
-`localStorage` and never leaves the device. The app makes exactly one network
-request — for its own question library — and none at all once that is cached.
+`localStorage` and never leaves the device. The app loads no third-party
+JavaScript. It requests its own question library, and a webfont stylesheet that
+is optional — the page renders immediately on system fonts if it never arrives,
+and neither is requested again once cached.
 
 ## Contributing
 
@@ -127,6 +131,9 @@ code. The one hard rule: never submit copyrighted exam material.
   is not equivalent to authentic exam recordings.
 - Reminders only fire while the page is open in a tab. There is no server, so the
   app cannot reach you after you close it.
+- Progress is per-browser. Two tabs stay in step with each other, but a different
+  browser or device starts from scratch unless you move a backup across by hand
+  (Settings → *Your data*).
 
 ## Trademark
 
