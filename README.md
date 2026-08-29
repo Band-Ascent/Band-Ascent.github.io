@@ -44,12 +44,12 @@ it says so.
 
 ## Try it
 
-**[Open the app](#)** — replace this link with your GitHub Pages URL.
+**[Open the app](https://band-ascent.github.io)** — replace this link with your GitHub Pages URL.
 
 ## Run it yourself
 
 ```bash
-git clone https://github.com/<org>/band-ascent.git
+git clone https://github.com/Band-Ascent/band-ascent.git
 cd band-ascent
 python3 -m http.server 8000
 # open http://localhost:8000/
